@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "MindYourMoney",
+    "slug": "mindyourmoney",
+    "scheme": "mindyourmoney",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mindyourmoney.app"
+    },
+    "android": {
+      "package": "com.mindyourmoney.app"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}
