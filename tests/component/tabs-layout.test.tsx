@@ -25,21 +25,21 @@ jest.mock("expo-router", () => {
 const mockUseSession = useSession as jest.Mock;
 
 describe("TabsLayout", () => {
-  it("redirects a signed-out user to sign-in instead of rendering tabs", () => {
+  it("redirects a signed-out user to sign-in instead of rendering tabs", async () => {
     mockUseSession.mockReturnValue({ isSignedIn: false });
 
-    render(<TabsLayout />);
+    await render(<TabsLayout />);
 
     expect(Redirect).toHaveBeenCalledWith(
       expect.objectContaining({ href: "/(auth)/sign-in" }),
-      expect.anything()
+      undefined
     );
   });
 
-  it("renders all four tabs for a signed-in user", () => {
+  it("renders all four tabs for a signed-in user", async () => {
     mockUseSession.mockReturnValue({ isSignedIn: true });
 
-    render(<TabsLayout />);
+    await render(<TabsLayout />);
 
     expect(screen.getByText("Home")).toBeTruthy();
     expect(screen.getByText("Add")).toBeTruthy();

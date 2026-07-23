@@ -10,15 +10,11 @@ jest.mock("@/lib/supabase", () => ({
     auth: {
       getSession: jest.fn(),
       onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
-      signInWithOtp: jest.fn(),
+      signInWithPassword: jest.fn(),
+      signUp: jest.fn(),
       signOut: jest.fn(),
     },
   },
-}));
-
-jest.mock("expo-linking", () => ({
-  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-  getInitialURL: jest.fn(() => Promise.resolve(null)),
 }));
 
 jest.mock("@/features/categories/seedCategories", () => ({
@@ -44,13 +40,12 @@ describe("session restore", () => {
       data: { session: { user: { id: "user-1" } } },
     });
 
-    render(
+    await render(
       <AuthProvider>
         <Probe />
       </AuthProvider>
     );
 
-    expect(screen.getByText("loading")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("signed-in")).toBeTruthy());
   });
 
@@ -59,7 +54,7 @@ describe("session restore", () => {
       data: { session: null },
     });
 
-    render(
+    await render(
       <AuthProvider>
         <Probe />
       </AuthProvider>

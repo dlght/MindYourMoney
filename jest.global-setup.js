@@ -6,7 +6,7 @@ module.exports = async function globalSetup() {
   if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
     process.env.EXPO_PUBLIC_SUPABASE_URL = "https://test-project.supabase.co";
   }
-  if (!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+  if (!process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test-key";
   }
 };

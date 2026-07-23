@@ -8,52 +8,89 @@ jest.mock("@/features/auth/useSession");
 const mockUseSession = useSession as jest.Mock;
 
 describe("SignInScreen", () => {
-  const signInWithEmail = jest.fn();
-  const clearLinkError = jest.fn();
+  const signIn = jest.fn();
+  const signUp = jest.fn();
+  const clearAuthError = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseSession.mockReturnValue({
-      signInWithEmail,
-      linkError: null,
-      clearLinkError,
+      signIn,
+      signUp,
+      authError: null,
+      clearAuthError,
     });
   });
 
-  it("shows a validation error for an invalid email and does not call signInWithEmail", async () => {
-    render(<SignInScreen />);
+  it("shows a validation error for an invalid email and does not call signIn", async () => {
+    await render(<SignInScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Email address"), "not-an-email");
-    fireEvent.press(screen.getByText("Send sign-in link"));
+    await fireEvent.changeText(screen.getByLabelText("Email address"), "not-an-email");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "password123");
+    await fireEvent.press(screen.getByText("Sign in"));
 
     expect(await screen.findByText("Enter a valid email address.")).toBeTruthy();
-    expect(signInWithEmail).not.toHaveBeenCalled();
+    expect(signIn).not.toHaveBeenCalled();
   });
 
-  it("shows the sent confirmation after successfully requesting a link", async () => {
-    signInWithEmail.mockResolvedValue({ error: null });
-    render(<SignInScreen />);
+  it("shows a validation error for a too-short password and does not call signIn", async () => {
+    await render(<SignInScreen />);
 
-    fireEvent.changeText(screen.getByLabelText("Email address"), "user@example.com");
-    fireEvent.press(screen.getByText("Send sign-in link"));
+    await fireEvent.changeText(screen.getByLabelText("Email address"), "user@example.com");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "abc");
+    await fireEvent.press(screen.getByText("Sign in"));
 
-    await waitFor(() => expect(signInWithEmail).toHaveBeenCalledWith("user@example.com"));
-    expect(await screen.findByText("Check your email")).toBeTruthy();
+    expect(await screen.findByText("Password must be at least 6 characters.")).toBeTruthy();
+    expect(signIn).not.toHaveBeenCalled();
   });
 
-  it("shows a request-a-new-link state when the context reports an expired/invalid link", () => {
-    mockUseSession.mockReturnValue({
-      signInWithEmail,
-      linkError: "This sign-in link has expired.",
-      clearLinkError,
-    });
+  it("calls signIn with the entered credentials", async () => {
+    signIn.mockResolvedValue({ error: null });
+    await render(<SignInScreen />);
 
-    render(<SignInScreen />);
+    await fireEvent.changeText(screen.getByLabelText("Email address"), "user@example.com");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "password123");
+    await fireEvent.press(screen.getByText("Sign in"));
 
-    expect(screen.getByText("This sign-in link is no longer valid")).toBeTruthy();
-    expect(screen.getByText("This sign-in link has expired.")).toBeTruthy();
+    await waitFor(() =>
+      expect(signIn).toHaveBeenCalledWith("user@example.com", "password123")
+    );
+  });
 
-    fireEvent.press(screen.getByText("Request a new link"));
-    expect(clearLinkError).toHaveBeenCalled();
+  it("shows the sign-in error returned from the auth call", async () => {
+    signIn.mockResolvedValue({ error: "Invalid login credentials" });
+    await render(<SignInScreen />);
+
+    await fireEvent.changeText(screen.getByLabelText("Email address"), "user@example.com");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "wrongpassword");
+    await fireEvent.press(screen.getByText("Sign in"));
+
+    expect(await screen.findByText("Invalid login credentials")).toBeTruthy();
+  });
+
+  it("switches to create-account mode and calls signUp", async () => {
+    signUp.mockResolvedValue({ error: null, needsEmailConfirmation: false });
+    await render(<SignInScreen />);
+
+    await fireEvent.press(screen.getByText("Don't have an account? Create one"));
+    await fireEvent.changeText(screen.getByLabelText("Email address"), "new@example.com");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "password123");
+    await fireEvent.press(screen.getByText("Create account"));
+
+    await waitFor(() =>
+      expect(signUp).toHaveBeenCalledWith("new@example.com", "password123")
+    );
+  });
+
+  it("shows a confirm-your-email state when the project requires email confirmation", async () => {
+    signUp.mockResolvedValue({ error: null, needsEmailConfirmation: true });
+    await render(<SignInScreen />);
+
+    await fireEvent.press(screen.getByText("Don't have an account? Create one"));
+    await fireEvent.changeText(screen.getByLabelText("Email address"), "new@example.com");
+    await fireEvent.changeText(screen.getByLabelText("Password"), "password123");
+    await fireEvent.press(screen.getByText("Create account"));
+
+    expect(await screen.findByText("Confirm your email")).toBeTruthy();
   });
 });

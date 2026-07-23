@@ -1,38 +1,37 @@
-# Contract: Auth Flow (Supabase Magic Link)
+# Contract: Auth Flow (Supabase Email + Password)
 
 This app has no custom backend endpoints (constitution II) — the "contract"
 is the shape of the Supabase Auth client calls the app relies on, and what
 the app guarantees to the user at each step.
 
-## 1. Request a magic link
+## 1. Create an account
 
-**Call**: `supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } })`
-
-**App guarantees**:
-- Shown a "check your email" confirmation state immediately after the call
-  resolves successfully.
-- Re-requesting (before the first link is used) supersedes the previous
-  link — the most recently requested link is the one that authenticates
-  (per spec Edge Cases); the app does not block re-requesting.
-
-**Failure modes surfaced to the user**: no network at request time; rate
-limited by Supabase (shown as "try again in a moment").
-
-## 2. Open the magic link
-
-**Call**: the app parses the incoming deep link itself (`expo-linking`
-URL event / `getInitialURL`) and calls `supabase.auth.setSession()` with
-the extracted `access_token`/`refresh_token`, or reads the `error`/
-`error_code` pair off the URL if the link was rejected (see research.md
-#3 — `detectSessionInUrl` does not work on native, so this cannot be left
-to the client library).
+**Call**: `supabase.auth.signUp({ email, password })`
 
 **App guarantees**:
-- A valid, unexpired, unused link results in a `SIGNED_IN` event and the
-  user is routed from `(auth)` to `(tabs)`.
-- An expired or already-used link does not silently fail: the app shows an
-  explicit "this link is no longer valid" state with a way to request a
-  new one (FR-005).
+- If the Supabase project has email confirmation disabled (this project's
+  configuration), a successful call returns a session directly and the user
+  is signed in immediately — no email round trip.
+- If email confirmation is enabled, a successful call returns no session;
+  the app shows a "confirm your email" state instead of silently doing
+  nothing.
+- An email that is already registered, or a password that fails Supabase's
+  policy, surfaces the returned error message to the user without leaving
+  them stuck.
+
+**Failure modes surfaced to the user**: email already registered; password
+too short (checked client-side first, then server-side); no network at
+request time.
+
+## 2. Sign in
+
+**Call**: `supabase.auth.signInWithPassword({ email, password })`
+
+**App guarantees**:
+- Correct credentials result in a `SIGNED_IN` event and the user is routed
+  from `(auth)` to `(tabs)`.
+- Incorrect credentials do not silently fail: the app shows the returned
+  "Invalid login credentials" message inline on the sign-in form.
 
 ## 3. Session restore on app launch
 

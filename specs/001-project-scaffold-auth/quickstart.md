@@ -7,11 +7,10 @@ Validation guide for Feature F1. Assumes the implementation tasks in
 
 - Node.js LTS and the Expo CLI (`npx expo` — no global install needed)
 - A Supabase project (free tier) with:
-  - Email auth enabled (magic link / OTP)
+  - Email auth enabled (email + password)
   - The migration in `contracts/categories-schema.sql` applied
-  - A redirect URL registered matching this app's deep link scheme
 - `.env` (or `app.config.ts` extra) populated with `EXPO_PUBLIC_SUPABASE_URL`
-  and `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+  and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 ## Setup
 
@@ -22,13 +21,13 @@ npx expo start
 
 Open the app in Expo Go or a simulator/emulator from the CLI output.
 
-## Scenario 1 — First-time sign-in seeds categories (User Story 1 + 3)
+## Scenario 1 — First-time account creation seeds categories (User Story 1 + 3)
 
-1. On the sign-in screen, enter an email address that has never signed in
-   before.
-2. Confirm the "check your email" state appears.
-3. Open the magic link from that email on the same device.
-4. **Expect**: app opens directly onto the Home tab, signed in.
+1. On the sign-in screen, tap "Don't have an account? Create one".
+2. Enter an email address that has never signed in before and a password.
+3. Submit the create-account form.
+4. **Expect**: app opens directly onto the Home tab, signed in (assumes
+   email confirmation is disabled on the Supabase project).
 5. Inspect the `categories` table (Supabase dashboard or SQL) for that
    user's `user_id`.
 6. **Expect**: exactly 11 rows, matching the names/icons/colors in
@@ -54,18 +53,18 @@ Open the app in Expo Go or a simulator/emulator from the CLI output.
 2. **Expect**: each tap opens its screen immediately, and the tab bar
    reflects the active tab.
 
-## Scenario 5 — Expired/invalid link (Edge Case)
+## Scenario 5 — Invalid credentials (Edge Case)
 
-1. Request a magic link, then request a second one before opening the
-   first.
-2. Open the first (superseded) link.
-3. **Expect**: an explicit "link no longer valid" state with an option to
-   request a new link — not a silent failure or crash.
+1. On the sign-in screen (sign-in mode), enter a registered email with the
+   wrong password.
+2. Submit the form.
+3. **Expect**: an explicit "Invalid login credentials" message — not a
+   silent failure or crash.
 
 ## Scenario 6 — No duplicate categories on repeat login
 
 1. Sign out from the account used in Scenario 1.
-2. Sign in again (new magic link, same email).
+2. Sign in again with the same email and password.
 3. Inspect the `categories` table for that `user_id` again.
 4. **Expect**: still exactly 11 rows — no duplicates created.
 
@@ -73,7 +72,7 @@ Open the app in Expo Go or a simulator/emulator from the CLI output.
 
 - `tests/unit/seedCategories.test.ts` — covers Scenario 1's seeding logic
   and Scenario 6's idempotency directly against a mocked Supabase client.
-- `tests/component/sign-in.test.tsx` — covers the request/confirmation/
-  invalid-link UI states from Scenarios 1 and 5.
+- `tests/component/sign-in.test.tsx` — covers the sign-in/create-account/
+  validation/error UI states from Scenarios 1 and 5.
 - `tests/component/tabs-layout.test.tsx` — covers Scenario 4's tab
   reachability and the signed-out redirect from FR-007.

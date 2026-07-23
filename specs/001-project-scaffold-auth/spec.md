@@ -10,35 +10,37 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Sign in with a magic link and stay signed in (Priority: P1)
+### User Story 1 - Sign in with email and password and stay signed in (Priority: P1)
 
-A new or returning user enters their email address, receives a sign-in link,
-taps it, and lands inside the app already authenticated. The next time they
-open the app, they are still signed in — no password, no repeated sign-in
-step — until they explicitly sign out.
+A new user creates an account with an email address and password; a
+returning user signs in with the same credentials and lands inside the app
+already authenticated. The next time they open the app, they are still
+signed in — no repeated sign-in step — until they explicitly sign out.
 
 **Why this priority**: Nothing else in the app is reachable or useful without
 an authenticated session; this is the load-bearing story for every other
 feature.
 
-**Independent Test**: Can be fully tested by entering an email, completing
-the magic-link flow, force-quitting the app, and reopening it — the user
+**Independent Test**: Can be fully tested by creating an account with an
+email and password, force-quitting the app, and reopening it — the user
 should land signed in without re-entering anything.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user has never signed in before, **When** they enter their
-   email and submit it, **Then** they receive a sign-in link and, upon
-   opening it, are signed into the app.
-2. **Given** a signed-in user force-quits and reopens the app, **When** the
+1. **Given** a user has never signed in before, **When** they enter an email
+   and password and submit the create-account form, **Then** their account
+   is created and they are signed into the app.
+2. **Given** a returning user, **When** they enter their email and correct
+   password and submit the sign-in form, **Then** they are signed into the
+   app.
+3. **Given** a signed-in user force-quits and reopens the app, **When** the
    app launches, **Then** they see the app already signed in, with no
    sign-in prompt.
-3. **Given** a signed-in user taps "Sign out" in Settings, **When** the app
+4. **Given** a signed-in user taps "Sign out" in Settings, **When** the app
    is reopened afterward, **Then** they are shown the sign-in screen again.
-4. **Given** a user opens a magic link that has expired or was already used,
-   **When** the app attempts to authenticate them, **Then** they see a clear
-   message that the link is no longer valid and an option to request a new
-   one.
+5. **Given** a user enters an email/password combination that does not match
+   an existing account, **When** they submit the sign-in form, **Then** they
+   see a clear message that the credentials are invalid.
 
 ---
 
@@ -100,12 +102,15 @@ correctly styled, with no manual setup performed.
 
 ### Edge Cases
 
-- What happens when a user requests a second magic link before using the
-  first one? The most recently requested link should be the one that works;
-  the app must not leave the user stuck between two conflicting links.
-- What happens when the magic-link email never arrives (spam filtering,
-  typo'd address)? The user needs a way to retry sending without restarting
-  the whole flow.
+- What happens when a user tries to create an account with an email that is
+  already registered? The system must surface a clear message rather than
+  silently failing or overwriting the existing account.
+- What happens when a user enters the wrong password? The system must show
+  a clear invalid-credentials message without revealing whether the email
+  itself is registered.
+- What happens when a user submits a password that does not meet the
+  project's minimum length? The system must reject it client-side with a
+  clear message before making a network call.
 - How does the system handle a user opening the app for the first time with
   no network connection? They should see a clear sign-in-requires-network
   state rather than a silent failure.
@@ -121,18 +126,18 @@ correctly styled, with no manual setup performed.
 
 ### Functional Requirements
 
-- **FR-001**: System MUST let a user request a sign-in link by submitting
-  their email address.
-- **FR-002**: System MUST authenticate the user when they open a valid,
-  unexpired sign-in link, without requiring a password.
+- **FR-001**: System MUST let a new user create an account with an email
+  address and password.
+- **FR-002**: System MUST let a returning user authenticate by submitting
+  their email address and password.
 - **FR-003**: System MUST persist the authenticated session across app
   restarts so the user is not asked to sign in again until they explicitly
   sign out or the session is otherwise invalidated.
 - **FR-004**: System MUST let a signed-in user sign out, which ends the
   persisted session and returns them to the sign-in screen on next launch.
-- **FR-005**: System MUST show a clear, actionable message when a sign-in
-  link is invalid, expired, or already used, and MUST let the user request a
-  new one without restarting the app.
+- **FR-005**: System MUST show a clear, actionable message when sign-in
+  fails (invalid credentials) or account creation fails (e.g., email already
+  registered, password too short), without leaving the user stuck.
 - **FR-006**: System MUST present four primary navigation destinations —
   Home, Add, Rules, and Settings — reachable in a single tap from one
   another, to every signed-in user.
@@ -162,9 +167,9 @@ correctly styled, with no manual setup performed.
 
 ### Measurable Outcomes
 
-- **SC-001**: A first-time user can go from entering their email to landing
-  on a fully category-populated Home tab in under 2 minutes, including the
-  time to open the sign-in link from their email.
+- **SC-001**: A first-time user can go from entering their email and
+  password to landing on a fully category-populated Home tab in under 2
+  minutes.
 - **SC-002**: 100% of first-time sign-ins result in the complete default
   category set being available, with zero duplicate categories after any
   number of subsequent sign-ins.
@@ -177,9 +182,13 @@ correctly styled, with no manual setup performed.
 
 ## Assumptions
 
-- Sign-in is email magic-link only for this feature; social sign-in options
-  (e.g., Apple/Google) are out of scope here and may be added in a later
-  feature.
+- Sign-in is email + password only for this feature; social sign-in options
+  (e.g., Apple/Google) and a "forgot password" reset flow are out of scope
+  here and may be added in a later feature.
+- If the Supabase project has email confirmation enabled, account creation
+  surfaces a "confirm your email" state instead of signing the user in
+  immediately; this project's default configuration has confirmation
+  disabled, so account creation signs the user in directly.
 - The Home, Add, Rules, and Settings destinations are scaffolded as
   navigable screens in this feature; their full content (expense list,
   add-expense flow, rule editor, settings options) is delivered by later

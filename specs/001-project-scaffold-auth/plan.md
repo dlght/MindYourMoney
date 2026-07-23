@@ -18,9 +18,9 @@ session across restarts.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x, strict mode (constitution I) — Expo SDK 51 (React Native 0.74, React 18)
+**Language/Version**: TypeScript 5.x, strict mode (constitution I) — Expo SDK 54 (React Native 0.81, React 19, New Architecture)
 
-**Primary Dependencies**: `expo-router` (navigation/tabs), `nativewind` + `tailwindcss` (styling/themes), `@supabase/supabase-js` (auth + Postgres client), `@tanstack/react-query` (data fetching/cache), `expo-secure-store` (session persistence), `@react-native-async-storage/async-storage` (Supabase client storage adapter requirement), `expo-linking` (magic-link deep link handling)
+**Primary Dependencies**: `expo-router` (navigation/tabs), `nativewind` + `tailwindcss` (styling/themes), `@supabase/supabase-js` (auth + Postgres client), `@tanstack/react-query` (data fetching/cache), `expo-secure-store` (session persistence), `@react-native-async-storage/async-storage` (Supabase client storage adapter requirement), `expo-linking` (Expo Router deep link handling)
 
 **Storage**: Supabase Postgres (`categories` table, RLS-scoped to `auth.uid()`); local session persisted via `expo-secure-store`; TanStack Query's in-memory + persisted cache for offline reads
 
@@ -88,7 +88,7 @@ app/                        # Expo Router file-based routes
 
 src/
 ├── lib/
-│   ├── supabase.ts           # Supabase client init (URL/anon key from env, SecureStore-backed auth storage adapter)
+│   ├── supabase.ts           # Supabase client init (URL/publishable key from env, SecureStore-backed auth storage adapter)
 │   └── queryClient.ts        # TanStack Query client (cache/staleTime defaults for offline tolerance)
 ├── features/
 │   ├── auth/

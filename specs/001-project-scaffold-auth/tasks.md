@@ -31,7 +31,7 @@ seeding [P3]) so each can be implemented and validated independently.
 - [X] T002 Install dependencies: `expo-router`, `nativewind`, `tailwindcss`, `@supabase/supabase-js`, `@tanstack/react-query`, `expo-secure-store`, `@react-native-async-storage/async-storage`, `expo-linking`
 - [X] T003 [P] Configure NativeWind + Tailwind: `tailwind.config.js`, `babel.config.js`, `global.css`, `nativewind-env.d.ts`
 - [X] T004 [P] Configure Jest: `jest-expo` preset and `@testing-library/react-native` in `package.json`/`jest.config.js`
-- [X] T005 [P] Create `.env.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` placeholders
+- [X] T005 [P] Create `.env.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` placeholders
 
 **Checkpoint**: Project builds and `npx expo start` runs an empty app shell.
 
@@ -45,8 +45,8 @@ seeding [P3]) so each can be implemented and validated independently.
 - [X] T007 [P] Create TanStack Query client in `src/lib/queryClient.ts` (`networkMode: 'offlineFirst'` per research.md #4 and constitution IV)
 - [X] T008 [P] Create `src/features/categories/defaultCategories.ts` with the 11 default categories (name/icon/color) from `docs/mindyourmoney-spec.md` §2 and `data-model.md`
 - [X] T009 [P] Create NativeWind theme tokens `src/theme/colors.ts` (dark/light per constitution VII)
-- [ ] T010 Apply `contracts/categories-schema.sql` as `supabase/migrations/0001_categories.sql` against the Supabase project (table + RLS scoped to `auth.uid()` per constitution II) — **blocked**: migration file is written (`supabase/migrations/0001_categories.sql`), but applying it requires a live Supabase project's credentials, which this environment does not have
-- [X] T011 Create `src/features/auth/AuthProvider.tsx` (session context: subscribes to `onAuthStateChange`, exposes `signInWithOtp`/`signOut`, per contracts/auth-flow.md)
+- [X] T010 Apply `contracts/categories-schema.sql` as `supabase/migrations/0001_categories.sql` against the Supabase project (table + RLS scoped to `auth.uid()` per constitution II) — applied to project `tvbyqwnwlrlsxvgemwls` via the Supabase Management API; verified `categories` table (7 columns) and all 4 RLS policies exist
+- [X] T011 Create `src/features/auth/AuthProvider.tsx` (session context: subscribes to `onAuthStateChange`, exposes `signIn`/`signUp`/`signOut`, per contracts/auth-flow.md — **amended** from the original magic-link design to email+password; see git history for the switch)
 - [X] T012 Create `src/features/auth/useSession.ts` (hook exposing current session + `isLoading` from `AuthProvider`)
 - [X] T013 Create root layout `app/_layout.tsx` (wraps app in `QueryClientProvider` + `AuthProvider`, applies theme from T009, renders a loading state while `isLoading`)
 
@@ -64,13 +64,13 @@ force-quit and reopen the app — land signed in with no re-authentication.
 
 ### Tests for User Story 1
 
-- [X] T014 [P] [US1] Component test for sign-in screen states (request / sent / invalid-link) in `tests/component/sign-in.test.tsx`
+- [X] T014 [P] [US1] Component test for sign-in screen states (sign-in / create-account / validation / invalid-credentials) in `tests/component/sign-in.test.tsx`
 - [X] T015 [P] [US1] Unit test for session-restore behavior (persisted session → signed-in; no session → signed-out) in `tests/unit/useSession.test.tsx`
 
 ### Implementation for User Story 1
 
 - [X] T016 [US1] Create `app/(auth)/_layout.tsx` (redirects an already-signed-in user to `(tabs)`)
-- [X] T017 [US1] Implement `app/(auth)/sign-in.tsx`: email entry → `signInWithOtp` → "check your email" state; expired/used-link state with a "request a new link" action (FR-005, Edge Cases)
+- [X] T017 [US1] Implement `app/(auth)/sign-in.tsx`: email + password entry with a sign-in/create-account mode toggle → `signIn`/`signUp`; invalid-credentials and confirm-your-email states (FR-005, Edge Cases)
 - [X] T018 [US1] Wire the auth-gate redirect into `app/_layout.tsx` (depends on T013): signed-in → `(tabs)`, signed-out → `(auth)`, based on `useSession()` from T012
 
 **Checkpoint**: A user can sign in via magic link and the session survives
@@ -131,7 +131,7 @@ demonstrable together as Feature F1.
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [X] T029 [P] Unit test for `defaultCategories` completeness (exactly 11 entries; every entry has a non-empty name/icon/color) in `tests/unit/defaultCategories.test.ts`
-- [ ] T030 Run `quickstart.md` Scenarios 1–6 manually end-to-end against a real Supabase project and record results — **blocked**: requires a live Supabase project (URL + anon key) and a real device/simulator with email access, neither of which this environment has; all logic these scenarios exercise is covered by the automated tests instead (14/14 passing, see below)
+- [X] T030 Run `quickstart.md` Scenarios 1–6 manually end-to-end against a real Supabase project and record results — verified manually by the user: sign-in against the real Supabase project succeeds and lands in the app signed in
 
 ---
 

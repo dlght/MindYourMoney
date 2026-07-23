@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import * as Linking from "expo-linking";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { createSessionFromUrl } from "@/features/auth/createSessionFromUrl";
 import { seedCategories } from "@/features/categories/seedCategories";
 
 interface AuthContextValue {
   session: Session | null;
   isLoading: boolean;
-  linkError: string | null;
-  clearLinkError: () => void;
-  signInWithEmail: (email: string) => Promise<{ error: string | null }>;
+  authError: string | null;
+  clearAuthError: () => void;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null; needsEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -19,7 +21,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [linkError, setLinkError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -42,43 +44,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    const handleUrl = ({ url }: { url: string }) => {
-      createSessionFromUrl(url).then((result) => {
-        if (result.error) setLinkError(result.error);
-      });
-    };
-
-    const linkingSubscription = Linking.addEventListener("url", handleUrl);
-    Linking.getInitialURL().then((url) => {
-      if (url) handleUrl({ url });
-    });
-
     return () => {
       subscription.unsubscribe();
-      linkingSubscription.remove();
     };
   }, []);
 
-  const signInWithEmail = async (email: string) => {
-    setLinkError(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: "mindyourmoney://",
-      },
-    });
+  const signIn = async (email: string, password: string) => {
+    setAuthError(null);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error?.message ?? null };
+  };
+
+  const signUp = async (email: string, password: string) => {
+    setAuthError(null);
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return { error: error.message, needsEmailConfirmation: false };
+    // If email confirmation is enabled on the Supabase project, signUp
+    // succeeds but returns no session until the user confirms.
+    return { error: null, needsEmailConfirmation: data.session === null };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
-  const clearLinkError = () => setLinkError(null);
+  const clearAuthError = () => setAuthError(null);
 
   return (
     <AuthContext.Provider
-      value={{ session, isLoading, linkError, clearLinkError, signInWithEmail, signOut }}
+      value={{ session, isLoading, authError, clearAuthError, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>

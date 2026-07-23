@@ -1,16 +1,17 @@
 import { useAuthContext } from "@/features/auth/AuthProvider";
 
 export function useSession() {
-  const { session, isLoading, linkError, clearLinkError, signInWithEmail, signOut } =
+  const { session, isLoading, authError, clearAuthError, signIn, signUp, signOut } =
     useAuthContext();
   return {
     session,
     user: session?.user ?? null,
     isSignedIn: session !== null,
     isLoading,
-    linkError,
-    clearLinkError,
-    signInWithEmail,
+    authError,
+    clearAuthError,
+    signIn,
+    signUp,
     signOut,
   };
 }
