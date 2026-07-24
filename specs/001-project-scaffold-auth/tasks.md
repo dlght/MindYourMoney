@@ -54,13 +54,15 @@ seeding [P3]) so each can be implemented and validated independently.
 
 ---
 
-## Phase 3: User Story 1 - Sign in with a magic link and stay signed in (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Sign in with email and password and stay signed in (Priority: P1) 🎯 MVP
 
-**Goal**: A user can request a magic link, sign in by opening it, and
-remains signed in across app restarts until they explicitly sign out.
+**Goal**: A user can create an account or sign in with an email and
+password, and remains signed in across app restarts until they explicitly
+sign out. (Amended from the originally-planned magic-link flow during
+implementation — self-critique F3, see contracts/auth-flow.md.)
 
-**Independent Test**: Enter an email, complete the magic-link flow,
-force-quit and reopen the app — land signed in with no re-authentication.
+**Independent Test**: Enter an email and password and submit, force-quit
+and reopen the app — land signed in with no re-authentication.
 
 ### Tests for User Story 1
 
@@ -73,8 +75,9 @@ force-quit and reopen the app — land signed in with no re-authentication.
 - [X] T017 [US1] Implement `app/(auth)/sign-in.tsx`: email + password entry with a sign-in/create-account mode toggle → `signIn`/`signUp`; invalid-credentials and confirm-your-email states (FR-005, Edge Cases)
 - [X] T018 [US1] Wire the auth-gate redirect into `app/_layout.tsx` (depends on T013): signed-in → `(tabs)`, signed-out → `(auth)`, based on `useSession()` from T012
 
-**Checkpoint**: A user can sign in via magic link and the session survives
-an app restart, independent of tabs or category content existing yet.
+**Checkpoint**: A user can sign in with email and password and the session
+survives an app restart, independent of tabs or category content existing
+yet.
 
 ---
 
@@ -188,7 +191,7 @@ Task: "Create Rules screen in app/(tabs)/rules.tsx"
 2. Complete Phase 3 (US1: sign in, session persists)
 3. **STOP and VALIDATE**: run quickstart.md Scenarios 2–3, 5 by hand
 4. This alone is not shippable (no way to reach app content) but proves the
-   riskiest technical piece — Supabase magic-link + SecureStore — works
+   riskiest technical piece — Supabase email+password auth + SecureStore — works
 
 ### Incremental Delivery
 

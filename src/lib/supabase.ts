@@ -1,4 +1,5 @@
 import "react-native-url-polyfill/auto";
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { createClient, type SupportedStorage } from "@supabase/supabase-js";
 
@@ -23,9 +24,26 @@ const secureStoreAdapter: SupportedStorage = {
   removeItem: (key: string) => SecureStore.deleteItemAsync(key),
 };
 
+// expo-secure-store has no web implementation; localStorage is the standard
+// web equivalent for a session blob (PWA conversion). Known platform
+// limitation, not a bug here: Safari's Intelligent Tracking Prevention can
+// clear localStorage after ~7 days of no interaction unless the PWA has
+// been added to the home screen, in which case storage persists normally.
+const webStorageAdapter: SupportedStorage = {
+  getItem: (key: string) => Promise.resolve(window.localStorage.getItem(key)),
+  setItem: (key: string, value: string) => {
+    window.localStorage.setItem(key, value);
+    return Promise.resolve();
+  },
+  removeItem: (key: string) => {
+    window.localStorage.removeItem(key);
+    return Promise.resolve();
+  },
+};
+
 export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
   auth: {
-    storage: secureStoreAdapter,
+    storage: Platform.OS === "web" ? webStorageAdapter : secureStoreAdapter,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,

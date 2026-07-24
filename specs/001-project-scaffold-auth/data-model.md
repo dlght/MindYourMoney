@@ -13,7 +13,7 @@ research.md #2).
 | Field | Type | Notes |
 |---|---|---|
 | `user.id` | uuid | Supabase `auth.users.id`; foreign key target for `categories.user_id` |
-| `user.email` | text | Shown in Settings; used to request the magic link |
+| `user.email` | text | Shown in Settings; used with a password to sign in (amended from magic-link, self-critique F3) |
 | `access_token` / `refresh_token` | text | Managed entirely by `@supabase/supabase-js`; app code never reads these directly |
 | `isLoading` | boolean (derived) | True while the session is being restored from SecureStore on app start |
 

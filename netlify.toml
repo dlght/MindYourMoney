@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build:web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Expo Router's web export is a single-page app (one index.html, client-side
+# routing) — without this, refreshing on e.g. /settings or /(auth)/sign-in
+# would 404 on Netlify's static file server instead of falling back to the
+# app shell.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    # Service workers must never be long-cached, or an update can't take
+    # effect until the cache expires.
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/_expo/static/*"
+  [headers.values]
+    # Filenames are content-hashed by Metro — safe to cache forever.
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -2,6 +2,12 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // Scoped to one deliberate case (self-critique F13): src/features/rules/notificationEngine.ts
+    // uses explicit-extension relative imports so it can also be imported directly by
+    // supabase/functions/evaluate-reminders (Deno, which requires extensions and has no bundler
+    // alias resolution — see that file's own comment, F5 research.md #2). Everywhere else in the
+    // app continues to use the "@/..." alias without extensions; don't let this spread casually.
+    "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -15,6 +21,7 @@
     "nativewind-env.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "supabase/functions"
   ]
 }

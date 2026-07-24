@@ -35,3 +35,15 @@
   recurrence semantics, and category defaulting all had clear precedent in
   `docs/mindyourmoney-spec.md` and the F1 spec to draw reasonable defaults
   from.
+- Amended post-implementation to add FR-013 (recurrence-conditional due
+  date entry) and FR-014 (save/delete failure visibility), promoted from
+  patch fixes (tasks.md T033/T034) once real usage showed they were
+  user-facing behavior guarantees, not just implementation detail. Re-ran
+  this checklist against the amended spec — still all passing, no new
+  clarification markers introduced.
+- Amended again post-implementation to add FR-015 (opt-in "already paid"
+  recording for a new recurring expense) and refine FR-013 (new recurring
+  expenses now default to their next occurrence instead of an already-
+  passed date), promoted from patch fix tasks.md T035. Re-ran this
+  checklist against the amended spec — still all passing, no new
+  clarification markers introduced.

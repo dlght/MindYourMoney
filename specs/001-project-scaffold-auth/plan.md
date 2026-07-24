@@ -8,9 +8,11 @@
 
 Stand up the Expo app shell that every later MindYourMoney feature builds on:
 Expo Router tab navigation (Home, Add, Rules, Settings) gated behind
-Supabase email magic-link authentication with a persisted session, plus
-automatic seeding of the eleven default expense categories into a user's
-account on their first successful sign-in. Technical approach: a single
+Supabase email+password authentication (amended from the originally-planned
+magic-link during implementation — see contracts/auth-flow.md, self-critique
+F3) with a persisted session, plus automatic seeding of the eleven default
+expense categories into a user's account on their first successful sign-in.
+Technical approach: a single
 Expo + TypeScript app using NativeWind for styling, `@supabase/supabase-js`
 for auth/data, TanStack Query for data fetching/caching (offline-tolerant
 per constitution IV), and `expo-secure-store` to persist the Supabase
@@ -78,7 +80,7 @@ app/                        # Expo Router file-based routes
 ├── +not-found.tsx
 ├── (auth)/
 │   ├── _layout.tsx           # Redirects signed-in users to (tabs)
-│   └── sign-in.tsx           # Email entry + magic-link sent state + invalid/expired link state
+│   └── sign-in.tsx           # Email + password entry with a sign-in/create-account toggle; invalid-credentials and confirm-your-email states (amended from magic-link, self-critique F3)
 └── (tabs)/
     ├── _layout.tsx            # Tab bar: Home, Add, Rules, Settings; redirects signed-out users to (auth)
     ├── index.tsx               # Home (placeholder content; full dashboard is F3)

@@ -1,0 +1,9 @@
+project_id = "tvbyqwnwlrlsxvgemwls"
+
+# evaluate-reminders is a cron-triggered backend job (contracts/evaluate-reminders-function.md,
+# F5) — it authenticates via its own x-cron-secret header, not a Supabase
+# user JWT, so the platform's default JWT-verification gateway must be
+# disabled for it or every pg_cron invocation is rejected before the
+# function's own auth check ever runs.
+[functions.evaluate-reminders]
+verify_jwt = false

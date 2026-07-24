@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
+import { Platform, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useSession } from "@/features/auth/useSession";
 
 type Mode = "sign-in" | "sign-up";
@@ -64,28 +65,37 @@ export default function SignInScreen() {
 
   if (state === "awaiting-confirmation") {
     return (
-      <View className="flex-1 items-center justify-center gap-3 bg-white px-6 dark:bg-slate-900">
-        <Text className="text-center text-lg font-semibold text-slate-900 dark:text-white">
-          Confirm your email
-        </Text>
-        <Text className="text-center text-slate-600 dark:text-slate-400">
-          We sent a confirmation link to {email.trim()}. Open it, then come back and sign in.
-        </Text>
-        <Pressable
-          onPress={() => {
-            setState("idle");
-            setMode("sign-in");
-          }}
-          accessibilityRole="button"
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-900">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1 items-center justify-center gap-3 px-6"
         >
-          <Text className="font-medium text-indigo-600 dark:text-indigo-400">Back to sign in</Text>
-        </Pressable>
-      </View>
+          <Text className="text-center text-lg font-semibold text-slate-900 dark:text-white">
+            Confirm your email
+          </Text>
+          <Text className="text-center text-slate-600 dark:text-slate-400">
+            We sent a confirmation link to {email.trim()}. Open it, then come back and sign in.
+          </Text>
+          <Pressable
+            onPress={() => {
+              setState("idle");
+              setMode("sign-in");
+            }}
+            accessibilityRole="button"
+          >
+            <Text className="font-medium text-indigo-600 dark:text-indigo-400">Back to sign in</Text>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 items-center justify-center gap-4 bg-white px-6 dark:bg-slate-900">
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-900">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1 items-center justify-center gap-4 px-6"
+      >
       <Text className="text-2xl font-semibold text-slate-900 dark:text-white">
         MindYourMoney
       </Text>
@@ -134,6 +144,7 @@ export default function SignInScreen() {
           {mode === "sign-in" ? "Don't have an account? Create one" : "Already have an account? Sign in"}
         </Text>
       </Pressable>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

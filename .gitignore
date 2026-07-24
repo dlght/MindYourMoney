@@ -5,6 +5,8 @@ web-build/
 *.log
 .env
 .env.local
+.env.staging
+!.env.staging.example
 .DS_Store
 Thumbs.db
 coverage/
@@ -14,3 +16,4 @@ coverage/
 .idea/
 ios/
 android/
+supabase/.temp/

@@ -21,6 +21,10 @@ jest.mock("@/features/categories/seedCategories", () => ({
   seedCategories: jest.fn(() => Promise.resolve()),
 }));
 
+jest.mock("@/features/rules/seedRules", () => ({
+  seedRules: jest.fn(() => Promise.resolve()),
+}));
+
 function Probe() {
   const { isSignedIn, isLoading } = useSession();
   if (isLoading) return <Text>loading</Text>;
