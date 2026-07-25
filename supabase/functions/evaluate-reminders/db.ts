@@ -11,8 +11,13 @@ export interface PushTokenRow {
   id: string;
   user_id: string;
   device_installation_id: string;
-  expo_push_token: string;
-  platform: "ios" | "android";
+  // Populated for platform "ios"/"android"; null for "web" (F8, data-model.md).
+  expo_push_token: string | null;
+  platform: "ios" | "android" | "web";
+  // Populated for platform "web"; null for "ios"/"android".
+  web_endpoint: string | null;
+  web_p256dh: string | null;
+  web_auth: string | null;
   last_ticket_id: string | null;
   last_ticket_sent_at: string | null;
 }

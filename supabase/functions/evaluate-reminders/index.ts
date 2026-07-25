@@ -15,6 +15,7 @@ import {
   recordSentTicket,
 } from "./db.ts";
 import { sendPushBatch, getReceipts, type ExpoPushMessage } from "./expoPush.ts";
+import { sendWebPush } from "./webPush.ts";
 import {
   computeDesiredNotifications,
   filterUndelivered,
@@ -116,11 +117,17 @@ async function evaluateAndSend(
       continue;
     }
 
+    // F8: partition by platform — 'ios'/'android' keep going through the
+    // existing, unmodified Expo path; 'web' rows are sent via the Web Push
+    // protocol instead (contracts/web-push-send-contract.md #1).
+    const expoTokens = tokens.filter((token) => token.platform === "ios" || token.platform === "android");
+    const webTokens = tokens.filter((token) => token.platform === "web");
+
     const messages: ExpoPushMessage[] = [];
     for (const candidate of undelivered) {
-      for (const token of tokens) {
+      for (const token of expoTokens) {
         messages.push({
-          to: token.expo_push_token,
+          to: token.expo_push_token as string,
           title: candidate.title,
           body: candidate.body,
           data: {
@@ -132,7 +139,7 @@ async function evaluateAndSend(
       }
     }
 
-    const tickets = await sendPushBatch(messages);
+    const tickets = messages.length > 0 ? await sendPushBatch(messages) : [];
 
     // messages/tickets are aligned candidate-major, token-minor (built in
     // lockstep above) — walk them back in the same order to attribute each
@@ -140,15 +147,42 @@ async function evaluateAndSend(
     let ticketIndex = 0;
     const logRows: Array<{ userId: string; expenseId: string; ruleId: string; triggerKind: string }> =
       [];
+    const goneWebTokenIds: string[] = [];
     for (const candidate of undelivered) {
       let deliveredToAnyDevice = false;
-      for (const token of tokens) {
+      for (const token of expoTokens) {
         const ticket = tickets[ticketIndex++];
         if (ticket?.status === "ok" && ticket.id) {
           deliveredToAnyDevice = true;
           await recordSentTicket(client, token.id, ticket.id);
         }
       }
+
+      // No receipt-check phase for web (research.md #4) — the send
+      // response itself is authoritative, so a "gone" subscription is
+      // queued for deletion right here, synchronously with the attempt.
+      for (const token of webTokens) {
+        const result = await sendWebPush({
+          subscription: {
+            endpoint: token.web_endpoint as string,
+            p256dh: token.web_p256dh as string,
+            auth: token.web_auth as string,
+          },
+          title: candidate.title,
+          body: candidate.body,
+          data: {
+            ruleId: candidate.ruleId,
+            expenseIds: candidate.expenseIds,
+            triggerKind: candidate.triggerKind,
+          },
+        });
+        if (result.status === "sent") {
+          deliveredToAnyDevice = true;
+        } else if (result.status === "gone") {
+          goneWebTokenIds.push(token.id);
+        }
+      }
+
       if (deliveredToAnyDevice) {
         sent += 1;
         for (const expenseId of candidate.expenseIds) {
@@ -162,6 +196,9 @@ async function evaluateAndSend(
       }
     }
     await insertServerNotificationLog(client, logRows);
+    if (goneWebTokenIds.length > 0) {
+      await deletePushTokensByIds(client, goneWebTokenIds);
+    }
   }
 
   return { sent, skippedDuplicates };

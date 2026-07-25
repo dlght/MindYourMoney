@@ -4,7 +4,11 @@ import type { PushToken, UpsertPushTokenInput } from "@/features/push/types";
 // Upsert on (user_id, device_installation_id) — the unique constraint from
 // push-tokens-schema.sql — so re-registering the same device (token
 // rotation, re-login) updates the existing row instead of creating a
-// duplicate (FR-001).
+// duplicate (FR-001). Passes through whichever shape the input actually
+// carries — expoPushToken for "ios"/"android", the web* fields for "web"
+// (F8, contracts/push-tokens-web-schema.sql) — the unused shape's columns
+// are left undefined so Postgres keeps its existing null/not-null values
+// from the check constraint's perspective.
 export async function upsertPushToken(
   userId: string,
   input: UpsertPushTokenInput
@@ -15,8 +19,11 @@ export async function upsertPushToken(
       {
         user_id: userId,
         device_installation_id: input.deviceInstallationId,
-        expo_push_token: input.expoPushToken,
         platform: input.platform,
+        expo_push_token: input.expoPushToken,
+        web_endpoint: input.webEndpoint,
+        web_p256dh: input.webP256dh,
+        web_auth: input.webAuth,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id,device_installation_id" }

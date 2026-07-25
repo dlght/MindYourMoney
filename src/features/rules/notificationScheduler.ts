@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { supabase } from "@/lib/supabase";
+import { isWebPushSupported } from "@/features/rules/webPushSupport";
 import type { NotificationCandidate } from "@/features/rules/types";
 
 function toTriggerDate(isoDate: string): Date {
@@ -102,10 +103,15 @@ export async function reconcileScheduledNotifications(
   }
 }
 
-/** Whether the app currently has permission to show notifications (FR-014). */
+/**
+ * Whether the app currently has permission to show notifications (FR-014).
+ * On web (F8, contracts/web-permission-ux-contract.md rule 1), reads the
+ * browser's own Notification.permission directly rather than
+ * expo-notifications, which deliberately doesn't support web at all.
+ */
 export async function hasNotificationPermission(): Promise<boolean> {
   if (Platform.OS === "web") {
-    return false;
+    return isWebPushSupported() && Notification.permission === "granted";
   }
   const { status } = await Notifications.getPermissionsAsync();
   return status === "granted";

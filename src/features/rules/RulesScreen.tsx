@@ -19,6 +19,13 @@ interface RulesScreenProps {
   // null = still checking; the banner only ever renders once we know for
   // sure permission is denied (FR-014).
   hasNotificationPermission: boolean | null;
+  // Web-only banner variant (F8, contracts/web-permission-ux-contract.md
+  // rule 2) — always "none" on native, where the existing static-text
+  // banner above still applies unchanged. "enable" renders an actionable
+  // button (onEnableWebPush is required when this is "enable"); "ios-install"
+  // renders install guidance with no actionable control (FR-005).
+  webPushBannerAction: "none" | "enable" | "ios-install";
+  onEnableWebPush?: () => void;
 }
 
 function summarizeRule(rule: Rule, categories: ExpenseCategoryOption[]): string {
@@ -48,6 +55,8 @@ export function RulesScreen({
   onUpdate,
   onDelete,
   hasNotificationPermission,
+  webPushBannerAction,
+  onEnableWebPush,
 }: RulesScreenProps) {
   const sheetRef = useRef<RuleSheetHandle>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Rule | null>(null);
@@ -102,7 +111,31 @@ export function RulesScreen({
         </Pressable>
       </View>
 
-      {hasNotificationPermission === false ? (
+      {hasNotificationPermission === false && webPushBannerAction === "enable" ? (
+        <View className="mx-6 mb-4 rounded-lg border border-amber-400 bg-amber-50 px-4 py-3 dark:border-amber-600 dark:bg-amber-950">
+          <Text className="mb-2 text-amber-900 dark:text-amber-200">
+            Reminders are off — enable notifications to get expense alerts.
+          </Text>
+          <Pressable
+            onPress={onEnableWebPush}
+            accessibilityRole="button"
+            className="self-start rounded-lg bg-amber-600 px-3 py-1.5"
+          >
+            <Text className="font-medium text-white">Enable notifications</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {hasNotificationPermission === false && webPushBannerAction === "ios-install" ? (
+        <View className="mx-6 mb-4 rounded-lg border border-amber-400 bg-amber-50 px-4 py-3 dark:border-amber-600 dark:bg-amber-950">
+          <Text className="text-amber-900 dark:text-amber-200">
+            Add this app to your Home Screen (Share → Add to Home Screen) to enable notifications —
+            Safari can only deliver them to an installed app.
+          </Text>
+        </View>
+      ) : null}
+
+      {hasNotificationPermission === false && webPushBannerAction === "none" ? (
         <View className="mx-6 mb-4 rounded-lg border border-amber-400 bg-amber-50 px-4 py-3 dark:border-amber-600 dark:bg-amber-950">
           <Text className="text-amber-900 dark:text-amber-200">
             Reminders are off — enable notifications in your device settings to get expense alerts.

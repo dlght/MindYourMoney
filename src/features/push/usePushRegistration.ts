@@ -4,6 +4,8 @@ import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { getDeviceInstallationId } from "@/lib/deviceId";
 import { upsertPushToken } from "@/features/push/pushTokenApi";
+import { urlBase64ToUint8Array } from "@/features/push/vapidKey";
+import { isWebPushSupported } from "@/features/rules/webPushSupport";
 import type { PushPlatform } from "@/features/push/types";
 
 function currentPlatform(): PushPlatform | null {
@@ -39,5 +41,69 @@ export function usePushRegistration() {
     const deviceInstallationId = await getDeviceInstallationId();
 
     await upsertPushToken(userId, { deviceInstallationId, expoPushToken, platform });
+  }, []);
+}
+
+export type EnableWebPushResult =
+  | { status: "subscribed" }
+  | { status: "unsupported" }
+  | { status: "denied" }
+  | { status: "error"; message: string };
+
+/**
+ * Web-only counterpart to usePushRegistration, deliberately NOT wired into
+ * the automatic sign-in/reconciliation call sites (contracts/
+ * web-permission-ux-contract.md rule 3) — an unsolicited page-load
+ * permission prompt is bad practice and often auto-denied by browsers, so
+ * this is only reachable via an explicit user action (the Rules screen's
+ * "Enable notifications" button).
+ *
+ * Everything from requestPermission() onward is wrapped in try/catch: a
+ * granted permission does not guarantee subscribe() succeeds (e.g. a
+ * browser/runtime that blocks the Push API for other reasons) — this must
+ * resolve to a result the caller can render, never an unhandled rejection
+ * (FR-006, graceful degradation).
+ */
+export function useEnableWebPush() {
+  return useCallback(async (userId: string): Promise<EnableWebPushResult> => {
+    if (Platform.OS !== "web" || !isWebPushSupported()) {
+      return { status: "unsupported" };
+    }
+
+    const publicKey = process.env.EXPO_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!publicKey) {
+      return { status: "unsupported" };
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        return { status: "denied" };
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+      });
+
+      const { endpoint, keys } = subscription.toJSON() as {
+        endpoint: string;
+        keys: { p256dh: string; auth: string };
+      };
+      const deviceInstallationId = await getDeviceInstallationId();
+
+      await upsertPushToken(userId, {
+        deviceInstallationId,
+        platform: "web",
+        webEndpoint: endpoint,
+        webP256dh: keys.p256dh,
+        webAuth: keys.auth,
+      });
+
+      return { status: "subscribed" };
+    } catch (error) {
+      return { status: "error", message: String(error) };
+    }
   }, []);
 }

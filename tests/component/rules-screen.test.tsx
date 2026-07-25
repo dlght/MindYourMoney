@@ -92,6 +92,7 @@ async function renderScreen(
     onUpdate: jest.fn().mockResolvedValue(undefined),
     onDelete: jest.fn().mockResolvedValue(undefined),
     hasNotificationPermission: true,
+    webPushBannerAction: "none",
     ...overrides,
   };
 
@@ -209,6 +210,51 @@ describe("RulesScreen — Scenario 11: notification permission banner", () => {
         "Reminders are off — enable notifications in your device settings to get expense alerts."
       )
     ).toBeNull();
+  });
+});
+
+describe("RulesScreen — F8 web push banner variants", () => {
+  it("shows an actionable Enable notifications button when webPushBannerAction is 'enable'", async () => {
+    const onEnableWebPush = jest.fn();
+    await renderScreen({
+      hasNotificationPermission: false,
+      webPushBannerAction: "enable",
+      onEnableWebPush,
+    });
+
+    const button = screen.getByRole("button", { name: "Enable notifications" });
+    await fireEvent.press(button);
+
+    expect(onEnableWebPush).toHaveBeenCalled();
+  });
+
+  it("shows iOS install guidance with no actionable control when webPushBannerAction is 'ios-install'", async () => {
+    const onEnableWebPush = jest.fn();
+    await renderScreen({
+      hasNotificationPermission: false,
+      webPushBannerAction: "ios-install",
+      onEnableWebPush,
+    });
+
+    expect(screen.getByText(/Add this app to your Home Screen/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Enable notifications" })).toBeNull();
+  });
+
+  it("shows the static device-settings banner when webPushBannerAction is 'none' (native, or an unsupported browser)", async () => {
+    await renderScreen({ hasNotificationPermission: false, webPushBannerAction: "none" });
+
+    expect(
+      screen.getByText(
+        "Reminders are off — enable notifications in your device settings to get expense alerts."
+      )
+    ).toBeTruthy();
+  });
+
+  it("shows no banner at all when permission is already granted, regardless of webPushBannerAction", async () => {
+    await renderScreen({ hasNotificationPermission: true, webPushBannerAction: "enable" });
+
+    expect(screen.queryByRole("button", { name: "Enable notifications" })).toBeNull();
+    expect(screen.queryByText(/Add this app to your Home Screen/)).toBeNull();
   });
 });
 

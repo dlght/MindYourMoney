@@ -53,3 +53,44 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
   );
 });
+
+// Web Push (F8, contracts/service-worker-push-contract.md): renders an
+// incoming push message as a real system notification. A malformed/empty
+// payload still shows a generic fallback rather than silently doing
+// nothing — an unexplained missed reminder is worse than a generic one.
+self.addEventListener("push", (event) => {
+  let payload;
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
+
+  const title = payload.title || "MindYourMoney";
+  const body = payload.body || "You have a new reminder.";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      data: payload.data || {},
+      icon: "/icons/icon-192.png",
+    })
+  );
+});
+
+// Tapping a notification focuses an already-open tab for this origin if
+// one exists, otherwise opens a new one (FR-004).
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow("/");
+    })
+  );
+});
