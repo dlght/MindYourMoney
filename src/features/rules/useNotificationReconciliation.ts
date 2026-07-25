@@ -38,7 +38,15 @@ export function useNotificationReconciliation() {
     const rules = queryClient.getQueryData<Rule[]>(rulesQueryKey(user.id)) ?? [];
     const desired = computeDesiredNotifications(rules, expenses, getTodayIso());
 
-    await reconcileScheduledNotifications(user.id, desired);
+    // Reconciliation is best-effort here on purpose (F6/US1): a failure in
+    // this local-notification step must never be mistaken for a failure of
+    // whatever mutation just settled and called this function —
+    // e.g. a successfully-saved expense must not show a "save failed"
+    // error just because reconciling notifications afterward threw. See
+    // specs/006-pwa-e2e-layout-fix/contracts/expense-save-error-contract.md.
+    await reconcileScheduledNotifications(user.id, desired).catch((error) => {
+      console.error("Failed to reconcile scheduled notifications", error);
+    });
     await registerPush(user.id).catch((error) => {
       console.error("Failed to register device for push notifications", error);
     });

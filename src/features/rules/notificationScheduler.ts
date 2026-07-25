@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { supabase } from "@/lib/supabase";
 import type { NotificationCandidate } from "@/features/rules/types";
@@ -46,6 +47,13 @@ export async function reconcileScheduledNotifications(
   userId: string,
   desired: NotificationCandidate[]
 ): Promise<void> {
+  // expo-notifications has no local-scheduling support on web (research.md
+  // #1) — calls below throw/reject there rather than no-op, so this must
+  // return early rather than let that surface as a reconciliation failure.
+  if (Platform.OS === "web") {
+    return;
+  }
+
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   const desiredIdentifiers = new Set(desired.map((candidate) => candidate.identifier));
 
@@ -96,6 +104,9 @@ export async function reconcileScheduledNotifications(
 
 /** Whether the app currently has permission to show notifications (FR-014). */
 export async function hasNotificationPermission(): Promise<boolean> {
+  if (Platform.OS === "web") {
+    return false;
+  }
   const { status } = await Notifications.getPermissionsAsync();
   return status === "granted";
 }

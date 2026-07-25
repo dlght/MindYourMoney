@@ -18,7 +18,7 @@ export function UpcomingList({ groups, emptyMessage, onMarkPaid }: UpcomingListP
   }
 
   return (
-    <View className="gap-4 px-4">
+    <View className="gap-4 px-6">
       {groups.map((group) => (
         <View key={group.isoDate} className="gap-2">
           <Text className="text-sm font-semibold text-slate-500 dark:text-slate-400">

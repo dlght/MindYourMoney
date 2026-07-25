@@ -119,7 +119,7 @@ export function RulesScreen({
       <FlatList
         data={rules}
         keyExtractor={(rule) => rule.id}
-        contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 24 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 24, paddingBottom: 24 }}
         renderItem={({ item }) => (
           <View className="rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
             <Pressable

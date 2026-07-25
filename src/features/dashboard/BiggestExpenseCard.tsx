@@ -8,7 +8,7 @@ interface BiggestExpenseCardProps {
 export function BiggestExpenseCard({ biggest }: BiggestExpenseCardProps) {
   if (!biggest.expense) {
     return (
-      <View className="mx-4 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
+      <View className="mx-6 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
         <Text className="text-sm text-slate-600 dark:text-slate-400">
           Nothing big due in the next 30 days.
         </Text>
@@ -19,7 +19,7 @@ export function BiggestExpenseCard({ biggest }: BiggestExpenseCardProps) {
   const { expense } = biggest;
 
   return (
-    <View className="mx-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950">
+    <View className="mx-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950">
       <Text className="text-sm font-medium text-amber-700 dark:text-amber-300">Biggest upcoming</Text>
       <Text className="text-lg font-semibold text-slate-900 dark:text-white">{expense.name}</Text>
       <Text className="text-slate-600 dark:text-slate-400">

@@ -7,6 +7,8 @@ web-build/
 .env.local
 .env.staging
 !.env.staging.example
+.env.e2e
+!.env.e2e.example
 .DS_Store
 Thumbs.db
 coverage/
@@ -17,3 +19,7 @@ coverage/
 ios/
 android/
 supabase/.temp/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

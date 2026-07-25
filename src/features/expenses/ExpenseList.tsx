@@ -37,7 +37,7 @@ export function ExpenseList({
       testID="expense-list"
       data={expenses}
       keyExtractor={(expense) => expense.id}
-      contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingVertical: 8 }}
+      contentContainerStyle={{ gap: 8, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24 }}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
       ListFooterComponent={
