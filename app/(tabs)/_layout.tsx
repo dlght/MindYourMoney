@@ -1,18 +1,13 @@
 import { useEffect } from "react";
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { AppState, useColorScheme } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppState } from "react-native";
 import { useSession } from "@/features/auth/useSession";
 import { useNotificationReconciliation } from "@/features/rules/useNotificationReconciliation";
-import { themeColors } from "@/theme/colors";
-import { getTabBarStyle } from "@/theme/tabBarStyle";
+import { CustomTabBar } from "@/features/navigation/CustomTabBar";
 
 export default function TabsLayout() {
   const { isSignedIn } = useSession();
-  const colorScheme = useColorScheme() ?? "light";
-  const colors = themeColors[colorScheme];
-  const insets = useSafeAreaInsets();
   const reconcile = useNotificationReconciliation();
 
   // FR-008/research.md #7(c): local notifications can only be reconciled
@@ -35,16 +30,9 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: getTabBarStyle(insets, colors),
-        // Larger label + a taller per-item touch area than RN Navigation's
-        // defaults — real-device feedback was that the bar felt small and
-        // hard to tap even once the safe-area/elevation fix (F7) landed.
-        tabBarLabelStyle: { fontSize: 12, fontWeight: "500" },
-        tabBarItemStyle: { paddingVertical: 4 },
       }}
     >
       <Tabs.Screen
