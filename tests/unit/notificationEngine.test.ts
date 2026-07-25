@@ -156,6 +156,21 @@ describe("computeDesiredNotifications — grouped digest (User Story 2)", () => 
 
     expect(computeDesiredNotifications([rule], [], TODAY)).toHaveLength(0);
   });
+
+  // days_before: 0 is the "Due today" default rule's shape
+  // (specs/007-tabbar-visibility-default-reminder/data-model.md) — confirms
+  // the engine needs no change to support a same-day trigger (research.md #4).
+  it("fires a same-day (days_before: 0) grouped reminder for an expense due today, regardless of amount", () => {
+    const rule = makeRule({ name: "Due today", is_grouped: true, min_amount: null, days_before: 0 });
+    const cheapExpense = makeExpense({ name: "Coffee", amount: 4, due_date: TODAY });
+
+    const candidates = computeDesiredNotifications([rule], [cheapExpense], TODAY);
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].triggerKind).toBe("grouped");
+    expect(candidates[0].triggerDateIso).toBe(TODAY);
+    expect(candidates[0].expenseIds).toEqual([cheapExpense.id]);
+  });
 });
 
 describe("computeDesiredNotifications — cross-rule dedupe (FR-011, Edge Cases)", () => {

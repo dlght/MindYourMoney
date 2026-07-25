@@ -18,3 +18,4 @@ export const themeColors = {
 } as const;
 
 export type ThemeName = keyof typeof themeColors;
+export type ThemeColors = (typeof themeColors)[ThemeName];

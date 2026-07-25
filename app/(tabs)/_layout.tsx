@@ -2,14 +2,17 @@ import { useEffect } from "react";
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AppState, useColorScheme } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSession } from "@/features/auth/useSession";
 import { useNotificationReconciliation } from "@/features/rules/useNotificationReconciliation";
 import { themeColors } from "@/theme/colors";
+import { getTabBarStyle } from "@/theme/tabBarStyle";
 
 export default function TabsLayout() {
   const { isSignedIn } = useSession();
   const colorScheme = useColorScheme() ?? "light";
   const colors = themeColors[colorScheme];
+  const insets = useSafeAreaInsets();
   const reconcile = useNotificationReconciliation();
 
   // FR-008/research.md #7(c): local notifications can only be reconciled
@@ -36,7 +39,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.background, borderTopColor: colors.border },
+        tabBarStyle: getTabBarStyle(insets, colors),
       }}
     >
       <Tabs.Screen
