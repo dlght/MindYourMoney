@@ -40,40 +40,39 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: getTabBarStyle(insets, colors),
+        // Larger label + a taller per-item touch area than RN Navigation's
+        // defaults — real-device feedback was that the bar felt small and
+        // hard to tap even once the safe-area/elevation fix (F7) landed.
+        tabBarLabelStyle: { fontSize: 12, fontWeight: "500" },
+        tabBarItemStyle: { paddingVertical: 4 },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={26} color={color} />,
         }}
       />
       <Tabs.Screen
         name="add"
         options={{
           title: "Add",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="add-circle" size={26} color={color} />,
         }}
       />
       <Tabs.Screen
         name="rules"
         options={{
           title: "Rules",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="notifications" size={26} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="settings" size={26} color={color} />,
         }}
       />
     </Tabs>

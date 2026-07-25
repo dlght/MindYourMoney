@@ -14,7 +14,9 @@ export default function SettingsScreen() {
     // app/(auth)/sign-in.tsx and the other three tab screens.
     <SafeAreaView edges={["top"]} className="flex-1 bg-white dark:bg-slate-900">
       <View className="flex-1 gap-4 px-6 pt-4 pb-6">
-        <Text className="text-xl font-semibold text-slate-900 dark:text-white">Settings</Text>
+        <Text accessibilityRole="header" className="text-xl font-semibold text-slate-900 dark:text-white">
+          Settings
+        </Text>
         {user?.email ? (
           <Text className="text-slate-600 dark:text-slate-400">Signed in as {user.email}</Text>
         ) : null}

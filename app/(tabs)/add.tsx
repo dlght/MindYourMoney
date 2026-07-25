@@ -27,13 +27,15 @@ export default function AddScreen() {
     // double gap above the tab bar.
     <SafeAreaView edges={["top"]} className="flex-1 bg-white dark:bg-slate-900">
       <View className="flex-row items-center justify-between px-6 py-4">
-        <Text className="text-xl font-semibold text-slate-900 dark:text-white">Expenses</Text>
+        <Text accessibilityRole="header" className="text-xl font-semibold text-slate-900 dark:text-white">
+          Expenses
+        </Text>
         <Pressable
           onPress={() => sheetRef.current?.present()}
           accessibilityRole="button"
-          className="rounded-lg bg-indigo-600 px-4 py-2"
+          className="min-h-[44px] items-center justify-center rounded-lg bg-indigo-600 px-5 py-3"
         >
-          <Text className="font-medium text-white">Add</Text>
+          <Text className="text-base font-semibold text-white">Add</Text>
         </Pressable>
       </View>
 

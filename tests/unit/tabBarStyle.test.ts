@@ -6,14 +6,14 @@ describe("getTabBarStyle", () => {
     const style = getTabBarStyle({ bottom: 0 }, themeColors.light);
 
     expect(style.paddingBottom).toBe(8);
-    expect(style.height).toBe(56);
+    expect(style.height).toBe(64);
   });
 
   it("respects a non-zero safe-area inset (e.g. a home indicator)", () => {
     const style = getTabBarStyle({ bottom: 34 }, themeColors.light);
 
     expect(style.paddingBottom).toBe(34);
-    expect(style.height).toBe(90);
+    expect(style.height).toBe(98);
   });
 
   it("uses the surface token (not background) so the bar is distinct from page content — light theme", () => {

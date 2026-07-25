@@ -5,11 +5,12 @@ import { test, expect } from "./fixtures/test-account";
 
 test("signs in, visits every tab, and signs out", async ({ signedInPage: page }) => {
   // Sign in already happened in the fixture — confirms the Home tab
-  // rendered its distinguishing content.
-  await expect(page.getByText("Upcoming total (next 30 days)")).toBeVisible();
+  // rendered its distinguishing content. "heading" (not plain text)
+  // disambiguates from the bottom tab bar's own "Home" label (F9).
+  await expect(page.getByRole("heading", { name: "Home" })).toBeVisible();
 
   await page.getByRole("tab", { name: "Add" }).click();
-  await expect(page.getByText("Expenses", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Expenses" })).toBeVisible();
 
   await page.getByRole("tab", { name: "Rules" }).click();
   await expect(page.getByRole("button", { name: "Add rule" })).toBeVisible();
@@ -18,7 +19,7 @@ test("signs in, visits every tab, and signs out", async ({ signedInPage: page })
   await expect(page.getByText(/Signed in as/)).toBeVisible();
 
   await page.getByRole("tab", { name: "Home" }).click();
-  await expect(page.getByText("Upcoming total (next 30 days)")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Home" })).toBeVisible();
 
   // No console/page error across the whole navigation pass.
   const pageErrors: string[] = [];

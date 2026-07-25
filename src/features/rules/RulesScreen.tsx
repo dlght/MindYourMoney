@@ -101,13 +101,15 @@ export function RulesScreen({
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-white dark:bg-slate-900">
       <View className="flex-row items-center justify-between px-6 py-4">
-        <Text className="text-xl font-semibold text-slate-900 dark:text-white">Rules</Text>
+        <Text accessibilityRole="header" className="text-xl font-semibold text-slate-900 dark:text-white">
+          Rules
+        </Text>
         <Pressable
           onPress={() => sheetRef.current?.present()}
           accessibilityRole="button"
-          className="rounded-lg bg-indigo-600 px-4 py-2"
+          className="min-h-[44px] items-center justify-center rounded-lg bg-indigo-600 px-5 py-3"
         >
-          <Text className="font-medium text-white">Add rule</Text>
+          <Text className="text-base font-semibold text-white">Add rule</Text>
         </Pressable>
       </View>
 
@@ -119,9 +121,9 @@ export function RulesScreen({
           <Pressable
             onPress={onEnableWebPush}
             accessibilityRole="button"
-            className="self-start rounded-lg bg-amber-600 px-3 py-1.5"
+            className="min-h-[44px] items-center justify-center self-start rounded-lg bg-amber-600 px-5 py-3"
           >
-            <Text className="font-medium text-white">Enable notifications</Text>
+            <Text className="text-base font-semibold text-white">Enable notifications</Text>
           </Pressable>
         </View>
       ) : null}

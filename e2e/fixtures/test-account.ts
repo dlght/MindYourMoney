@@ -34,8 +34,13 @@ export const test = base.extend<TestAccountFixtures>({
 
     // The Home tab renders this once the session lands and the dashboard's
     // first query resolves — a reliable "signed in" signal that doesn't
-    // depend on any particular expense data existing yet.
-    await expect(page.getByText("Upcoming total (next 30 days)")).toBeVisible({
+    // depend on any particular expense data existing yet. Uses the screen's
+    // "Home" heading (accessibilityRole="header") rather than the total
+    // card's label (F9: that label is now a locale-formatted month name,
+    // e.g. "July total", so no longer a stable literal to wait on) — and
+    // "heading" specifically (not plain text) to disambiguate from the
+    // bottom tab bar's own "Home" label, which shares the same text.
+    await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({
       timeout: 15_000,
     });
 

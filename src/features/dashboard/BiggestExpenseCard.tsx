@@ -3,14 +3,16 @@ import type { BiggestUpcoming } from "@/features/dashboard/types";
 
 interface BiggestExpenseCardProps {
   biggest: BiggestUpcoming;
+  // e.g. "July" or "July & August" — see UpcomingTotalCard's windowLabel.
+  windowLabel: string;
 }
 
-export function BiggestExpenseCard({ biggest }: BiggestExpenseCardProps) {
+export function BiggestExpenseCard({ biggest, windowLabel }: BiggestExpenseCardProps) {
   if (!biggest.expense) {
     return (
       <View className="mx-6 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
         <Text className="text-sm text-slate-600 dark:text-slate-400">
-          Nothing big due in the next 30 days.
+          Nothing big due in {windowLabel}.
         </Text>
       </View>
     );
